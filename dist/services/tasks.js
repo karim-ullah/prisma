@@ -87,4 +87,26 @@ export const editTask = async (req, res) => {
         });
     }
 };
+export const deleteTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await prisma.tasks.delete({
+            where: {
+                id
+            }
+        });
+        res.json({
+            success: true,
+            message: 'deleted success',
+            data: result
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'failed to delete task',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
 //# sourceMappingURL=tasks.js.map

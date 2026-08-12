@@ -102,7 +102,7 @@ export const editTask = async(req: Request<{ id: string }>, res: Response)=>{
     }
 }
 
-export const deleteTask = async(req: Request, res: Response)=>{
+export const deleteTask = async(req: Request<{ id: string }>, res: Response)=>{
     try {
         const {id} = req.params
         const result = await prisma.tasks.delete({
