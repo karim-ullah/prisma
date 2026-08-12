@@ -2,33 +2,11 @@ import prisma from "../lib/prisma.js";
 export const createTask = async (req, res) => {
     try {
         const { title, description, userId } = req.body;
-        if (typeof title !== 'string' ||
-            typeof description !== 'string' ||
-            typeof userId !== 'string' ||
-            !title.trim() ||
-            !description.trim() ||
-            !userId.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: 'title, description, and userId are required'
-            });
-        }
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId.trim()
-            }
-        });
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'user not found'
-            });
-        }
         const result = await prisma.tasks.create({
             data: {
-                title: title.trim(),
-                description: description.trim(),
-                userId: userId.trim()
+                title,
+                description,
+                userId
             }
         });
         res.json({
@@ -41,6 +19,70 @@ export const createTask = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'failed to add task',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+export const getTasks = async (req, res) => {
+    try {
+        const result = await prisma.tasks.findMany();
+        res.json({
+            success: true,
+            message: 'tasks retrieved success',
+            data: result
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'failed to get tasks',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+export const editTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description } = req.body;
+        if (typeof title !== 'string' ||
+            typeof description !== 'string' ||
+            !title.trim() ||
+            !description.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'title and description are required'
+            });
+        }
+        const task = await prisma.tasks.findUnique({
+            where: {
+                id
+            }
+        });
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                message: 'task not found'
+            });
+        }
+        const result = await prisma.tasks.update({
+            where: {
+                id: id
+            },
+            data: {
+                title: title.trim(),
+                description: description.trim()
+            }
+        });
+        res.json({
+            success: true,
+            message: 'edited success',
+            data: result
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'failed to edit task',
             error: error instanceof Error ? error.message : 'Unknown error'
         });
     }

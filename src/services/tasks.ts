@@ -30,3 +30,97 @@ export const createTask = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const getTasks = async(req: Request, res: Response)=>{
+    try {
+        const result = await prisma.tasks.findMany()
+        res.json({
+            success: true,
+            message: 'tasks retrieved success',
+            data: result
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'failed to get tasks',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        })
+    }
+}
+
+export const editTask = async(req: Request<{ id: string }>, res: Response)=>{
+    try {
+        const {id} = req.params
+        const {title, description} = req.body
+
+        if (
+            typeof title !== 'string' ||
+            typeof description !== 'string' ||
+            !title.trim() ||
+            !description.trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'title and description are required'
+            })
+        }
+
+        const task = await prisma.tasks.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                message: 'task not found'
+            })
+        }
+
+        const result = await prisma.tasks.update({
+            where : {
+                id : id
+            },
+            data: {
+                title: title.trim(),
+                description: description.trim()
+            }
+        })
+
+        res.json({
+             success: true,
+            message: 'edited success',
+            data: result
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'failed to edit task',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        })
+    }
+}
+
+export const deleteTask = async(req: Request, res: Response)=>{
+    try {
+        const {id} = req.params
+        const result = await prisma.tasks.delete({
+            where: {
+                id
+            }
+        })
+
+        res.json({
+             success: true,
+            message: 'deleted success',
+            data: result
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'failed to delete task',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        })
+    }
+}
